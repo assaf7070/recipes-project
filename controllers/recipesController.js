@@ -108,4 +108,39 @@ async function remove(req, res, next) {
     } catch (e) { next(e); }
 }
 
-module.exports = { list, getById, create, update, remove };
+// GET /api/recipes/stats
+async function stats(req, res, next) {
+  try {
+    const all = await readRecipes();
+    const total = all.length;
+
+    const averageCookingTime = total === 0
+      ? 0
+      : Number((all.reduce((sum, r) => sum + Number(r.cookingTime || 0), 0) / total).toFixed(2));
+
+    const byDifficulty = { easy: 0, medium: 0, hard: 0 };
+    for (const r of all) {
+      const d = String(r.difficulty || '').toLowerCase();
+      if (byDifficulty[d] !== undefined) byDifficulty[d]++;
+    }
+
+    // bonus: most common ingredients (top 10)
+    const freq = new Map();
+    for (const r of all) {
+      if (!Array.isArray(r.ingredients)) continue;
+      for (const ing of r.ingredients) {
+        const key = String(ing || '').trim().toLowerCase();
+        if (!key) continue;
+        freq.set(key, (freq.get(key) || 0) + 1);
+      }
+    }
+    const topIngredients = [...freq.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([name, count]) => ({ name, count }));
+
+    res.json({ total, averageCookingTime, byDifficulty, topIngredients });
+  } catch (e) { next(e); }
+}
+
+module.exports = { list, getById, create, update, remove, stats };

@@ -4,6 +4,7 @@ const recipes = require('../controllers/recipesController');
 const { validateRecipeBody } = require('../middlewares/validate');
 
 // READ
+router.get('/stats', recipes.stats);
 router.get('/', recipes.list);
 router.get('/:id', recipes.getById);
 
