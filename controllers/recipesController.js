@@ -1,4 +1,5 @@
-const { readRecipes } = require('../db/fileDb');
+const { readRecipes, writeRecipes } = require('../db/fileDb');
+const { v4: uuidv4 } = require('uuid');
 
 // GET /api/recipes
 async function list(req, res, next) {
@@ -45,4 +46,25 @@ async function getById(req, res, next) {
   }
 }
 
-module.exports = { list, getById };
+// POST /api/recipes
+async function create(req, res, next) {
+  try {
+    const data = req.validated; // from validate middleware
+    const all = await readRecipes();
+
+    const newRecipe = {
+      id: uuidv4(),
+      ...data,
+      createdAt: new Date().toISOString()
+    };
+
+    all.push(newRecipe);
+    await writeRecipes(all);
+
+    res.status(201).json(newRecipe);
+  } catch (e) {
+    next(e);
+  }
+}
+
+module.exports = { list, getById, create };
