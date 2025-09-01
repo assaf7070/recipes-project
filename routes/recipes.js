@@ -13,6 +13,8 @@ router.post('/', validateRecipeBody, recipes.create);
 // UPDATE
 router.put('/:id', validateRecipeBody, recipes.update);
 
+// DELETE
+router.delete('/:id', recipes.remove);
 
 
 module.exports = router;

@@ -93,4 +93,19 @@ async function update(req, res, next) {
     } catch (e) { next(e); }
 }
 
-module.exports = { list, getById, create, update };
+// DELETE /api/recipes/:id
+async function remove(req, res, next) {
+    try {
+        const all = await readRecipes();
+        const idx = all.findIndex(r => r.id === req.params.id);
+        if (idx === -1) {
+            return res.status(404).json({ error: true, message: 'Recipe not found', statusCode: 404 });
+        }
+
+        all.splice(idx, 1);
+        await writeRecipes(all);
+        res.status(204).send();
+    } catch (e) { next(e); }
+}
+
+module.exports = { list, getById, create, update, remove };
